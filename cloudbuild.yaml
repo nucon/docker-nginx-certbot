@@ -4,4 +4,4 @@ steps:
   args:
   - '-c'
   - |
-    cd src && docker build -t gcr.io/$PROJECT_ID/docker-nginx-certbox . && docker push gcr.io/$PROJECT_ID/docker-nginx-certbox
+    cd src && docker build -t gcr.io/$PROJECT_ID/nginx-certbot . && docker push gcr.io/$PROJECT_ID/nginx-certbot
