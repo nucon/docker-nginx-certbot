@@ -23,14 +23,6 @@ for f in /scripts/startup/*.sh; do
 done
 echo "Done with startup"
 
-sleep 30
-
-/scripts/run_certbot.sh
-
-sleep 300
-
-/scripts/run_certbot.sh
-
 # Instead of trying to run `cron` or something like that, just sleep and run `certbot`.
 while [ true ]; do
     echo "Run certbot"
