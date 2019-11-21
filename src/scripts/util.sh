@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # Helper function to output error messages to STDERR, with red text
 error() {
@@ -29,8 +29,9 @@ parse_keyfiles() {
 # keyfiles), return 1 otherwise
 keyfiles_exist() {
     for keyfile in $(parse_keyfiles $1); do
-        if [ ! -f $keyfile ]; then
-            echo "Couldn't find keyfile $keyfile for $1"
+	    currentfile=${keyfile//$'\r'/}
+        if [ ! -f $currentfile ]; then
+            echo "Couldn't find keyfile $currentfile for $1"
             return 1
         fi
     done
@@ -59,8 +60,8 @@ auto_enable_configs() {
 # EMAIL environment variable, to register the proper support email address.
 get_certificate() {
     echo "Getting certificate for domain $1 on behalf of user $2"
-    PRODUCTION_URL='https://acme-v01.api.letsencrypt.org/directory'
-    STAGING_URL='https://acme-staging.api.letsencrypt.org/directory'
+    PRODUCTION_URL='https://acme-v02.api.letsencrypt.org/directory'
+    STAGING_URL='https://acme-staging-v02.api.letsencrypt.org/directory'
 
     if [ "${IS_STAGING}" = "1" ]; then
         letsencrypt_url=$STAGING_URL
@@ -90,4 +91,22 @@ is_renewal_required() {
     last_renewal_delta_sec=$(( ($now_sec - $last_renewal_sec) ))
     is_finshed_week_sec=$(( ($one_week_sec - $last_renewal_delta_sec) ))
     [ $is_finshed_week_sec -lt 0 ]
+}
+
+# symlinks any *.conf files in /etc/nginx/user.conf.d
+# to /etc/nginx/conf.d so they are included as configs
+# this allows a user to easily mount their own configs
+link_user_configs() {
+    SOURCE_DIR="${1-/etc/nginx/user.conf.d}"
+    TARGET_DIR="${2-/etc/nginx/conf.d}"
+
+    echo "symlinking scripts from ${SOURCE_DIR} to ${TARGET_DIR}"
+
+    if [ ! -d "$SOURCE_DIR" ]; then
+        echo "no ${SOURCE_DIR}, nothing to do."
+    else
+        for conf in ${SOURCE_DIR}/*.conf; do
+            ln -sv "${conf}" "${TARGET_DIR}/$(basename ${conf})"
+        done
+    fi
 }
